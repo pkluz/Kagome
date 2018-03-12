@@ -44,7 +44,7 @@ public final class KagomeTransitioningDelegate: NSObject, UIViewControllerTransi
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         var radius: CGFloat = 0.0
         if dismissed.presentingViewController != nil && dismissed.presentingViewController?.transitioningDelegate is KagomeTransitioningDelegate {
-           radius = self.cornerRadius
+            radius = self.cornerRadius
         }
         return KagomeTransitionController(isPresenting: false,
                                           shouldCover: shouldCoverSourceController,
@@ -163,7 +163,11 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
                 if self.shouldCover {
                     toController.view.frame = transitionContext.finalFrame(for: toController)
                 } else {
-                    toController.view.frame = transitionContext.finalFrame(for: toController).offsetBy(dx: 0.0, dy: self.modalTopDistance)
+                    toController.view.frame = {
+                        var frame = transitionContext.finalFrame(for: toController).offsetBy(dx: 0.0, dy: self.modalTopDistance)
+                        frame.size.height -= self.modalTopDistance
+                        return frame
+                    }()
                 }
             }, completion: { _ in
                 transitionContext.completeTransition(true)
@@ -197,3 +201,4 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
         }
     }
 }
+
