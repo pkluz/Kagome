@@ -29,7 +29,6 @@ public final class KagomeTransitioningDelegate: NSObject, UIViewControllerTransi
     // MARK: - KagomeTransitioningDelegate
     
     public var shouldCoverSourceController: Bool = false
-    public var roundCorners: Bool = false
     public var cornerRadius: CGFloat = 8.0
     
     // MARK: - UIViewControllerTransitioningDelegate
@@ -39,15 +38,17 @@ public final class KagomeTransitioningDelegate: NSObject, UIViewControllerTransi
                                     source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         return KagomeTransitionController(isPresenting: true,
                                           shouldCover: shouldCoverSourceController,
-                                          roundCorners: roundCorners,
                                           cornerRadius: cornerRadius)
     }
     
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        var radius: CGFloat = 0.0
+        if dismissed.presentingViewController != nil && dismissed.presentingViewController?.transitioningDelegate is KagomeTransitioningDelegate {
+           radius = self.cornerRadius
+        }
         return KagomeTransitionController(isPresenting: false,
                                           shouldCover: shouldCoverSourceController,
-                                          roundCorners: roundCorners,
-                                          cornerRadius: cornerRadius)
+                                          cornerRadius: radius)
     }
 }
 
@@ -57,16 +58,13 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
     
     private let isPresenting: Bool
     private let shouldCover: Bool
-    private let roundCorners: Bool
     private let cornerRadius: CGFloat
     
     public init(isPresenting presenting: Bool,
                 shouldCover: Bool,
-                roundCorners: Bool = false,
                 cornerRadius: CGFloat = 8.0) {
         self.isPresenting = presenting
         self.shouldCover = shouldCover
-        self.roundCorners = roundCorners
         self.cornerRadius = cornerRadius
         super.init()
     }
@@ -94,15 +92,18 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
     }
     
     private var scaleFactor: CGFloat = 0.95
-    private var oldCornerRadius: CGFloat = 0.0
+    private var sourceOldCornerRadius: CGFloat = 0.0
+    private var targetOldCornerRadius: CGFloat = 0.0
     private lazy var dimView: UIView = {
         let view = UIView()
         view.backgroundColor = .black
         view.alpha = 0.0
-        view.tag = self.dimViewTag
+        view.tag = KagomeTransitionController.dimViewTag
         return view
     }()
-    private let dimViewTag: Int = 33295761735
+    
+    private static let dimViewTag: Int = 33295761735
+    private static let snapshotViewTag: Int = 52186628380
     
     // MARK: - UIViewControllerAnimatedTransitioning
     
@@ -115,29 +116,38 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
         let containerView = transitionContext.containerView
         
         guard let fromController = transitionContext.viewController(forKey: .from),
+              let snapshottedFromView = transitionContext.viewController(forKey: .from)?.view.snapshotView(afterScreenUpdates: false),
               let toController = transitionContext.viewController(forKey: .to) else { return }
         
         if isPresenting {
+            containerView.addSubview(snapshottedFromView)
             containerView.addSubview(dimView)
-            dimView.frame = containerView.bounds
             containerView.addSubview(toController.view)
+            
+            snapshottedFromView.tag = KagomeTransitionController.snapshotViewTag
+            snapshottedFromView.frame = fromController.view.frame
+            dimView.frame = containerView.bounds
+            
             toController.view.frame = CGRect(x: 0.0,
                                              y: containerView.bounds.height,
                                              width: containerView.bounds.width,
                                              height: containerView.bounds.height)
-            oldCornerRadius = fromController.view.layer.cornerRadius
+            sourceOldCornerRadius = fromController.view.layer.cornerRadius
+            targetOldCornerRadius = toController.view.layer.cornerRadius
             
             UIView.animate(withDuration: duration, animations: {
-                if self.roundCorners {
-                    fromController.view.layer.cornerRadius = self.cornerRadius
-                    fromController.view.layer.masksToBounds = true
-                }
+                fromController.view.layer.cornerRadius = self.cornerRadius
+                fromController.view.layer.masksToBounds = true
+                snapshottedFromView.layer.cornerRadius = self.cornerRadius
+                snapshottedFromView.layer.masksToBounds = true
+                toController.view.layer.cornerRadius = self.cornerRadius
+                toController.view.layer.masksToBounds = true
                 
                 self.dimView.alpha = 0.6
                 
-                fromController.view.transform = {
+                let fromTransfrom: CGAffineTransform = {
                     if fromController.view.frame == containerView.bounds {
-                        let scale = CGAffineTransform(scaleX: self.scaleFactor * 0.97, y: self.scaleFactor * 0.96)
+                        let scale = CGAffineTransform(scaleX: self.scaleFactor * 0.97, y: self.scaleFactor * 0.97)
                         let translate = CGAffineTransform(translationX: 0.0, y: self.rearViewTranslation(isFirst: true))
                         return scale.concatenating(translate)
                     } else {
@@ -146,6 +156,9 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
                         return scale.concatenating(translate)
                     }
                 }()
+                
+                fromController.view.transform = fromTransfrom
+                snapshottedFromView.transform = fromTransfrom
                 
                 if self.shouldCover {
                     toController.view.frame = transitionContext.finalFrame(for: toController)
@@ -156,17 +169,29 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
                 transitionContext.completeTransition(true)
             })
         } else {
-            let dimView = containerView.subviews.first(where: { $0.tag == self.dimViewTag })
+            let dimView = containerView.subviews.first(where: { $0.tag == KagomeTransitionController.dimViewTag })
+            let snapshotView = containerView.subviews.first(where: { $0.tag == KagomeTransitionController.snapshotViewTag })
+            
             UIView.animate(withDuration: duration, animations: {
-                toController.view.transform = CGAffineTransform.identity
-                toController.view.layer.cornerRadius = self.oldCornerRadius
+                dimView?.alpha = 0.0
+                snapshotView?.transform = .identity
+                toController.view.transform = .identity
+                
+                fromController.view.layer.cornerRadius = self.cornerRadius
+                fromController.view.layer.masksToBounds = true
+                snapshottedFromView.layer.cornerRadius = self.cornerRadius
+                snapshottedFromView.layer.masksToBounds = true
+                toController.view.layer.cornerRadius = self.cornerRadius
+                toController.view.layer.masksToBounds = true
+                
                 fromController.view.frame = CGRect(x: 0.0,
                                                    y: containerView.bounds.height,
                                                    width: containerView.bounds.width,
                                                    height: containerView.bounds.height)
-                dimView?.alpha = 0.0
             }, completion: { _ in
                 dimView?.removeFromSuperview()
+                snapshotView?.removeFromSuperview()
+                fromController.view.removeFromSuperview()
                 transitionContext.completeTransition(true)
             })
         }

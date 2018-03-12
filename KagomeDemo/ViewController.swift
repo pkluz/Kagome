@@ -79,7 +79,6 @@ class ViewController: UIViewController {
     private lazy var modalTransitioningDelegate: KagomeTransitioningDelegate = {
         let delegate = KagomeTransitioningDelegate()
         delegate.cornerRadius = 12.0
-        delegate.roundCorners = true
         return delegate
     }()
     

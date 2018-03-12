@@ -14,10 +14,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        let controller = UITabBarController()
+        controller.viewControllers = [ UINavigationController(rootViewController: ViewController()) ]
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.backgroundColor = .black
-        window?.rootViewController = UINavigationController(rootViewController: ViewController())
+        window?.rootViewController = controller
         window?.rootViewController?.view.backgroundColor = .white
         window?.makeKeyAndVisible()
         
