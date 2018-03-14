@@ -102,8 +102,8 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
         return view
     }()
     
-    private static let dimViewTag: Int = 33295761735
-    private static let snapshotViewTag: Int = 52186628380
+    private static let dimViewTag: Int = 332951735
+    private static let snapshotViewTag: Int = 521866280
     
     // MARK: - UIViewControllerAnimatedTransitioning
     
