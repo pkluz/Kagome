@@ -52,6 +52,7 @@
 		F9B7B7C12055CC5A009DFF7D /* Kagome.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Kagome.h; sourceTree = "<group>"; };
 		F9B7B7C22055CC5A009DFF7D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F9B7B7CC2055CF2D009DFF7D /* KagomeTransitioningDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KagomeTransitioningDelegate.swift; path = Kagome/KagomeTransitioningDelegate.swift; sourceTree = SOURCE_ROOT; };
+		F9D3F4E7211A58FB00DC2339 /* Kagome.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = Kagome.podspec; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +95,7 @@
 		F9B7B7A72055CC41009DFF7D /* KagomeDemo */ = {
 			isa = PBXGroup;
 			children = (
+				F9D3F4E7211A58FB00DC2339 /* Kagome.podspec */,
 				F9B7B7A82055CC41009DFF7D /* AppDelegate.swift */,
 				F9B7B7AA2055CC41009DFF7D /* ViewController.swift */,
 				F9B7B7AF2055CC41009DFF7D /* Assets.xcassets */,
