@@ -13,7 +13,7 @@ extension UIDevice {
     fileprivate static var isIPhoneX: Bool {
         if UIDevice().userInterfaceIdiom == .phone {
             switch UIScreen.main.nativeBounds.height {
-            case 2436:
+            case 2436.0, 2688.0:
                 return true
             default:
                 return false
