@@ -10,14 +10,9 @@ import UIKit
 
 extension UIDevice {
     
-    fileprivate static var isIPhoneX: Bool {
-        if UIDevice().userInterfaceIdiom == .phone {
-            switch UIScreen.main.nativeBounds.height {
-            case 2436.0, 2688.0:
-                return true
-            default:
-                return false
-            }
+    fileprivate static var isNotched: Bool {
+        if #available(iOS 11.0, tvOS 11.0, *) {
+            return UIApplication.shared.delegate?.window??.safeAreaInsets.top ?? 0 > 24
         }
         
         return false
@@ -71,27 +66,27 @@ public final class KagomeTransitionController: NSObject, UIViewControllerAnimate
     
     private func rearViewTranslation(isFirst: Bool) -> CGFloat {
         if isFirst {
-            if UIDevice.isIPhoneX {
-                return 4.0
+            if UIDevice.isNotched {
+                return 2.0
             }
             return -8.0
         } else {
-            if UIDevice.isIPhoneX {
-                return -30.0
+            if UIDevice.isNotched {
+                return -38.0
             }
             return -24.0
         }
     }
     
     private var modalTopDistance: CGFloat {
-        if UIDevice.isIPhoneX {
-            return shouldCover ? 0.0 : 50.0
+        if UIDevice.isNotched {
+            return shouldCover ? 0.0 : 62.0
         }
         
         return shouldCover ? 0.0 : 30.0
     }
     
-    private var scaleFactor: CGFloat = 0.95
+    private var scaleFactor: CGFloat = 0.925
     private var sourceOldCornerRadius: CGFloat = 0.0
     private var targetOldCornerRadius: CGFloat = 0.0
     private lazy var dimView: UIView = {
